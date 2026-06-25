@@ -20,10 +20,38 @@
         .grade-E { background: #fee2e2; color: #991b1b; }
         .tab-btn.active { border-bottom: 2px solid #2563eb; color: #2563eb; }
         .player-photo-circle { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; background: #e2e8f0; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
+        #login-screen { position: fixed; inset: 0; z-index: 100; background: #f8fafc; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen bg-gray-50">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="card p-8 w-full max-w-sm m-4">
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <h1 class="text-2xl font-black text-gray-800">FUTSALPRO</h1>
+                <p class="text-sm text-gray-500 font-bold">Login Sistem Manajemen</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                    <input type="text" id="login-username" class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
+                    <input type="password" id="login-password" class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition" onkeypress="if(event.key === 'Enter') performLogin()">
+                </div>
+                <button onclick="performLogin()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-blue-700 transition mt-2">LOGIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP WRAPPER -->
+    <div id="app-wrapper" class="min-h-screen flex flex-col md:flex-row w-full">
 
     <!-- Sidebar -->
     <nav class="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0">
@@ -48,8 +76,14 @@
                 <i class="fas fa-calendar-check w-5"></i> Jadwal & Hasil
             </button>
             <div class="mt-4 pt-4 border-t border-gray-100">
-                <button onclick="showPage('settings')" id="nav-settings" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition">
+                <button onclick="showPage('users')" id="nav-users" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-users w-5"></i> Manajemen Pengguna
+                </button>
+                <button onclick="showPage('settings')" id="nav-settings" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                     <i class="fas fa-cog w-5"></i> Pengaturan Tim
+                </button>
+                <button onclick="performLogout()" class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-red-500 font-semibold hover:bg-red-50 transition w-full text-left">
+                    <i class="fas fa-sign-out-alt w-5"></i> Logout
                 </button>
             </div>
         </div>
@@ -227,6 +261,33 @@
             <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
+        <!-- USERS PAGE -->
+        <section id="page-users" class="page-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Manajemen Pengguna</h2>
+                    <p class="text-sm text-gray-500">Kelola akses akun untuk sistem ini.</p>
+                </div>
+                <button onclick="openUserModal()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                    <i class="fas fa-user-plus mr-1"></i> Tambah Pengguna
+                </button>
+            </div>
+            <div class="card overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[600px]">
+                        <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                            <tr>
+                                <th class="p-4">Username</th>
+                                <th class="p-4 text-center">Role</th>
+                                <th class="p-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-list-body" class="divide-y text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- SETTINGS PAGE -->
         <section id="page-settings" class="page-content hidden space-y-6">
             <div class="max-w-2xl mx-auto">
@@ -249,6 +310,30 @@
             </div>
         </section>
     </main>
+    </div>
+    <!-- END APP WRAPPER -->
+
+    <!-- USER MODAL -->
+    <div id="user-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-800" id="user-modal-title">Tambah Pengguna</h3>
+                <button onclick="closeUserModal()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-username-ref">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                    <input type="text" id="u-username" class="w-full p-3 border rounded-xl outline-none font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1" id="u-password-label">Password</label>
+                    <input type="password" id="u-password" class="w-full p-3 border rounded-xl outline-none font-bold">
+                </div>
+                <button onclick="saveUser()" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 mt-2">Simpan</button>
+            </div>
+        </div>
+    </div>
 
     <!-- PLAYER MODAL -->
     <div id="player-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
@@ -384,6 +469,7 @@
 
     <script>
         // DATA STATE
+        let appUsers = JSON.parse(localStorage.getItem('futsal_users_v11')) || [{username: 'admin', password: 'admin123'}];
         let players = JSON.parse(localStorage.getItem('futsal_p_v11')) || [];
         let matches = JSON.parse(localStorage.getItem('futsal_m_v11')) || [];
         let teamSettings = JSON.parse(localStorage.getItem('futsal_team_v11')) || {
@@ -397,9 +483,40 @@
         let tempLogoBase64 = teamSettings.logo;
 
         window.onload = () => { 
+            checkLoginStatus();
             applyTeamSettings(); 
             refreshAll(); 
         };
+
+        function checkLoginStatus() {
+            const isLoggedIn = sessionStorage.getItem('logged_in_user');
+            if (isLoggedIn) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-wrapper').style.display = 'flex';
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('app-wrapper').style.display = 'none';
+            }
+        }
+
+        function performLogin() {
+            const user = document.getElementById('login-username').value;
+            const pass = document.getElementById('login-password').value;
+            const found = appUsers.find(u => u.username === user && u.password === pass);
+            if (found) {
+                sessionStorage.setItem('logged_in_user', user);
+                document.getElementById('login-password').value = '';
+                checkLoginStatus();
+            } else {
+                alert("Username atau password salah!");
+            }
+        }
+
+        function performLogout() {
+            sessionStorage.removeItem('logged_in_user');
+            checkLoginStatus();
+            showPage('dashboard');
+        }
 
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
@@ -412,6 +529,7 @@
         }
 
         function saveData() {
+            localStorage.setItem('futsal_users_v11', JSON.stringify(appUsers));
             localStorage.setItem('futsal_p_v11', JSON.stringify(players));
             localStorage.setItem('futsal_m_v11', JSON.stringify(matches));
             localStorage.setItem('futsal_team_v11', JSON.stringify(teamSettings));
@@ -424,6 +542,73 @@
             renderMatches();
             renderDashboard();
             renderPlayerStats();
+            renderUsers();
+        }
+
+        // USER MANAGEMENT
+        function renderUsers() {
+            const body = document.getElementById('users-list-body');
+            const currentUser = sessionStorage.getItem('logged_in_user');
+            body.innerHTML = appUsers.map(u => `
+                <tr class="border-b hover:bg-gray-50/50">
+                    <td class="p-4 font-bold text-gray-800">${u.username} ${u.username === currentUser ? '<span class="ml-2 text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-lg uppercase">Aktif</span>' : ''}</td>
+                    <td class="p-4 text-center text-xs font-bold text-gray-500 uppercase">Admin</td>
+                    <td class="p-4 text-right">
+                        <button onclick="openUserModal('${u.username}')" class="text-blue-500 hover:text-blue-700 mx-2" title="Edit Password"><i class="fas fa-key"></i></button>
+                        ${appUsers.length > 1 && u.username !== currentUser ? `<button onclick="deleteUser('${u.username}')" class="text-red-400 hover:text-red-600" title="Hapus"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openUserModal(username = null) {
+            document.getElementById('user-modal').classList.remove('hidden');
+            document.getElementById('u-password').value = "";
+            if (username) {
+                document.getElementById('user-modal-title').innerText = "Edit Password Pengguna";
+                document.getElementById('edit-username-ref').value = username;
+                document.getElementById('u-username').value = username;
+                document.getElementById('u-username').readOnly = true;
+                document.getElementById('u-username').classList.add('bg-gray-100');
+                document.getElementById('u-password-label').innerText = "Password Baru";
+            } else {
+                document.getElementById('user-modal-title').innerText = "Tambah Pengguna Baru";
+                document.getElementById('edit-username-ref').value = "";
+                document.getElementById('u-username').value = "";
+                document.getElementById('u-username').readOnly = false;
+                document.getElementById('u-username').classList.remove('bg-gray-100');
+                document.getElementById('u-password-label').innerText = "Password";
+            }
+        }
+
+        function closeUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
+
+        function saveUser() {
+            const ref = document.getElementById('edit-username-ref').value;
+            const username = document.getElementById('u-username').value.trim();
+            const password = document.getElementById('u-password').value;
+
+            if (!username || !password) return alert("Username dan Password wajib diisi!");
+
+            if (ref) {
+                const idx = appUsers.findIndex(u => u.username === ref);
+                if (idx > -1) appUsers[idx].password = password;
+            } else {
+                if (appUsers.some(u => u.username === username)) return alert("Username sudah digunakan!");
+                appUsers.push({ username, password });
+            }
+            
+            saveData();
+            closeUserModal();
+            alert("Data pengguna berhasil disimpan!");
+        }
+
+        function deleteUser(username) {
+            if (appUsers.length <= 1) return alert("Tidak bisa menghapus satu-satunya pengguna!");
+            if (confirm("Hapus pengguna " + username + "?")) {
+                appUsers = appUsers.filter(u => u.username !== username);
+                saveData();
+            }
         }
 
         // TEAM SETTINGS
