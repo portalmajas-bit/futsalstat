@@ -51,10 +51,24 @@
     </div>
 
     <!-- APP WRAPPER -->
-    <div id="app-wrapper" class="min-h-screen flex flex-col md:flex-row w-full">
+    <div id="app-wrapper" class="h-screen flex-col md:flex-row w-full overflow-hidden relative" style="display: none;">
 
-    <!-- Sidebar -->
-    <nav class="w-full md:w-64 bg-white border-r border-gray-200 flex-shrink-0">
+        <!-- MOBILE HEADER -->
+        <div class="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black shadow-md"><i class="fas fa-futbol"></i></div>
+                <h1 class="font-black text-gray-800 text-lg uppercase tracking-tight" id="mobile-header-title">FUTSALPRO</h1>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 text-2xl px-2">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- SIDEBAR OVERLAY (MOBILE) -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden"></div>
+
+        <!-- SIDEBAR -->
+        <nav id="sidebar" class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-50 h-full flex-shrink-0">
         <div class="p-6 flex items-center gap-3">
             <img id="sidebar-logo" src="https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff" class="w-12 h-12 rounded-xl object-cover" alt="Logo">
             <div>
@@ -63,17 +77,20 @@
             </div>
         </div>
         <div class="flex flex-col gap-1 px-4">
-            <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition">
+            <button onclick="showPage('dashboard')" id="nav-dashboard" class="sidebar-link active flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                 <i class="fas fa-home w-5"></i> Dashboard
             </button>
-            <button onclick="showPage('players')" id="nav-players" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition">
+            <button onclick="showPage('players')" id="nav-players" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                 <i class="fas fa-user-gear w-5"></i> Manajemen Pemain
             </button>
-            <button onclick="showPage('stats')" id="nav-stats" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition">
+            <button onclick="showPage('stats')" id="nav-stats" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                 <i class="fas fa-chart-line w-5"></i> Statistik Pemain
             </button>
-            <button onclick="showPage('matches')" id="nav-matches" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition">
+            <button onclick="showPage('matches')" id="nav-matches" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                 <i class="fas fa-calendar-check w-5"></i> Jadwal & Hasil
+            </button>
+            <button onclick="showPage('attendance')" id="nav-attendance" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                <i class="fas fa-clipboard-list w-5"></i> Kehadiran Atlet
             </button>
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <button onclick="showPage('users')" id="nav-users" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
@@ -261,6 +278,36 @@
             <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </section>
 
+        <!-- ATTENDANCE PAGE -->
+        <section id="page-attendance" class="page-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h2 class="text-2xl font-bold text-gray-800">Kehadiran & Rekap</h2>
+                <button onclick="openAttendanceModal()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-plus mr-2"></i> Tambah Sesi
+                </button>
+            </div>
+            <div class="flex border-b border-gray-200">
+                <button onclick="switchAttTab('sesi')" id="tab-att-sesi" class="tab-btn active px-6 py-3 font-bold text-sm transition">Daftar Sesi</button>
+                <button onclick="switchAttTab('rekap')" id="tab-att-rekap" class="tab-btn px-6 py-3 font-bold text-sm transition">Rekap Kehadiran</button>
+            </div>
+            <div id="att-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="att-rekap-view" class="card overflow-x-auto hidden">
+                <table class="w-full text-left min-w-[800px]">
+                    <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                        <tr>
+                            <th class="p-4">Pemain</th>
+                            <th class="p-4 text-center">Hadir</th>
+                            <th class="p-4 text-center">Izin</th>
+                            <th class="p-4 text-center">Sakit</th>
+                            <th class="p-4 text-center">Alpa</th>
+                            <th class="p-4 text-center">Persentase</th>
+                        </tr>
+                    </thead>
+                    <tbody id="att-rekap-body" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+
         <!-- USERS PAGE -->
         <section id="page-users" class="page-content hidden space-y-6">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -423,6 +470,53 @@
         </div>
     </div>
 
+    <!-- ATTENDANCE MODAL -->
+    <div id="attendance-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div class="p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
+                <span id="att-modal-title">Sesi Kehadiran Baru</span>
+                <button onclick="closeAttendanceModal()"><i class="fas fa-times text-gray-300 hover:text-red-500"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="att-id">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tanggal</label>
+                        <input type="date" id="att-date" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Jenis Sesi</label>
+                        <select id="att-type" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                            <option value="Latihan">Latihan</option>
+                            <option value="Pertandingan">Pertandingan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Keterangan / Judul</label>
+                        <input type="text" id="att-title" placeholder="Contoh: Latihan Taktik" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                </div>
+                <div class="overflow-x-auto mt-4 border rounded-xl">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500 border-b">
+                            <tr>
+                                <th class="p-3">Nama Pemain</th>
+                                <th class="p-3 text-center w-24">Hadir</th>
+                                <th class="p-3 text-center w-24">Izin</th>
+                                <th class="p-3 text-center w-24">Sakit</th>
+                                <th class="p-3 text-center w-24">Alpa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="att-players-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button onclick="saveAttendance()" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 uppercase tracking-wider">Simpan Kehadiran</button>
+            </div>
+        </div>
+    </div>
+
     <!-- RESULT MODAL -->
     <div id="result-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
@@ -472,12 +566,15 @@
         let appUsers = JSON.parse(localStorage.getItem('futsal_users_v11')) || [{username: 'admin', password: 'admin123'}];
         let players = JSON.parse(localStorage.getItem('futsal_p_v11')) || [];
         let matches = JSON.parse(localStorage.getItem('futsal_m_v11')) || [];
+        let attendances = JSON.parse(localStorage.getItem('futsal_att_v11')) || [];
         let teamSettings = JSON.parse(localStorage.getItem('futsal_team_v11')) || {
             name: "FUTSALPRO", slogan: "ELITE PERFORMANCE TEAM",
             logo: "https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff", established: 2024
         };
 
         let currentMatchTab = 'upcoming';
+        let currentAttTab = 'sesi';
+        let currentAttSession = [];
         let performanceChart = null;
         let tempPlayerPhoto = null;
         let tempLogoBase64 = teamSettings.logo;
@@ -518,6 +615,18 @@
             showPage('dashboard');
         }
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
         function showPage(pageId) {
             document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
             document.getElementById('page-' + pageId).classList.remove('hidden');
@@ -525,6 +634,11 @@
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
             document.getElementById('nav-' + pageId).classList.add('active');
             
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+
             if(pageId === 'dashboard') renderDashboard();
         }
 
@@ -532,6 +646,7 @@
             localStorage.setItem('futsal_users_v11', JSON.stringify(appUsers));
             localStorage.setItem('futsal_p_v11', JSON.stringify(players));
             localStorage.setItem('futsal_m_v11', JSON.stringify(matches));
+            localStorage.setItem('futsal_att_v11', JSON.stringify(attendances));
             localStorage.setItem('futsal_team_v11', JSON.stringify(teamSettings));
             refreshAll();
         }
@@ -540,6 +655,7 @@
             recalculatePlayerStats();
             renderPlayers();
             renderMatches();
+            renderAttendances();
             renderDashboard();
             renderPlayerStats();
             renderUsers();
@@ -614,6 +730,7 @@
         // TEAM SETTINGS
         function applyTeamSettings() {
             document.getElementById('sidebar-team-name').innerText = teamSettings.name;
+            if (document.getElementById('mobile-header-title')) document.getElementById('mobile-header-title').innerText = teamSettings.name;
             document.getElementById('sidebar-team-slogan').innerText = teamSettings.slogan;
             document.getElementById('sidebar-logo').src = teamSettings.logo;
             document.getElementById('setting-logo-preview').src = teamSettings.logo;
@@ -850,7 +967,12 @@
                 .sort((a, b) => b.stats.avgRating - a.stats.avgRating)
                 .map(p => `
                 <tr class="border-b hover:bg-blue-50/30">
-                    <td class="p-4 font-bold text-blue-600 sticky left-0 bg-white z-10">${p.nickname}</td>
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-100">
+                            <span class="font-bold text-blue-600 text-xs uppercase truncate">${p.nickname}</span>
+                        </div>
+                    </td>
                     <td class="p-4 text-center">${p.stats.matchesPlayed}</td>
                     <td class="p-4 text-center font-black text-yellow-600 bg-yellow-50">${p.stats.mvpCount}</td>
                     <td class="p-4 text-center font-bold">${p.stats.goals}</td>
@@ -1003,6 +1125,161 @@
         function deleteMatch(id) {
             if(confirm("Hapus pertandingan ini? Statistik pemain akan otomatis diupdate.")) {
                 matches = matches.filter(m => m.id !== id);
+                saveData();
+            }
+        }
+
+        // ATTENDANCE LOGIC
+        function switchAttTab(tab) {
+            currentAttTab = tab;
+            document.getElementById('tab-att-sesi').classList.toggle('active', tab === 'sesi');
+            document.getElementById('tab-att-rekap').classList.toggle('active', tab === 'rekap');
+            
+            if(tab === 'sesi') {
+                document.getElementById('att-sesi-view').classList.remove('hidden');
+                document.getElementById('att-rekap-view').classList.add('hidden');
+                renderAttendances();
+            } else {
+                document.getElementById('att-sesi-view').classList.add('hidden');
+                document.getElementById('att-rekap-view').classList.remove('hidden');
+                renderAttendanceRecap();
+            }
+        }
+
+        function renderAttendances() {
+            const grid = document.getElementById('att-sesi-view');
+            if(attendances.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Belum ada sesi kehadiran</div>`;
+                return;
+            }
+            grid.innerHTML = [...attendances].sort((a,b) => new Date(b.date) - new Date(a.date)).map(att => `
+                <div class="card p-5 space-y-4">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-gray-100 text-gray-500 uppercase">${new Date(att.date).toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</span>
+                        <span class="text-[10px] font-black px-2 py-1 rounded ${att.type === 'Latihan' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} uppercase">${att.type}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg truncate">${att.title || 'Sesi Tanpa Judul'}</h4>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">${att.records.length} Pemain Tercatat</p>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-gray-100">
+                        <button onclick="openAttendanceModal(${att.id})" class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold hover:bg-gray-100">EDIT ABSENSI</button>
+                        <button onclick="deleteAttendance(${att.id})" class="w-10 bg-red-50 text-red-400 py-2 rounded-lg text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAttendanceRecap() {
+            const body = document.getElementById('att-rekap-body');
+            body.innerHTML = players.map(p => {
+                let hadir = 0, izin = 0, sakit = 0, alpa = 0;
+                attendances.forEach(att => {
+                    const rec = att.records.find(r => r.pid === p.id);
+                    if(rec) {
+                        if(rec.status === 'Hadir') hadir++;
+                        else if(rec.status === 'Izin') izin++;
+                        else if(rec.status === 'Sakit') sakit++;
+                        else if(rec.status === 'Alpa') alpa++;
+                    }
+                });
+                const total = hadir + izin + sakit + alpa;
+                const percent = total > 0 ? Math.round((hadir / total) * 100) : 0;
+                
+                return `
+                <tr class="border-b hover:bg-gray-50/50">
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-100">
+                            <span class="font-bold text-gray-800 uppercase text-xs truncate">${p.nickname}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center font-bold text-green-600 bg-green-50/30">${hadir}</td>
+                    <td class="p-4 text-center font-bold text-yellow-600">${izin}</td>
+                    <td class="p-4 text-center font-bold text-orange-600">${sakit}</td>
+                    <td class="p-4 text-center font-bold text-red-600">${alpa}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 rounded-lg ${percent >= 75 ? 'bg-green-600' : (percent >= 50 ? 'bg-yellow-500' : 'bg-red-500')} text-white text-[10px] font-black">${percent}%</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openAttendanceModal(attId = null) {
+            document.getElementById('attendance-modal').classList.remove('hidden');
+            if(attId) {
+                const att = attendances.find(x => x.id === attId);
+                document.getElementById('att-modal-title').innerText = "Edit Sesi Kehadiran";
+                document.getElementById('att-id').value = att.id;
+                document.getElementById('att-date').value = att.date;
+                document.getElementById('att-type').value = att.type;
+                document.getElementById('att-title').value = att.title;
+                currentAttSession = players.map(p => {
+                    const existing = att.records.find(r => r.pid === p.id);
+                    return { pid: p.id, status: existing ? existing.status : 'Hadir' };
+                });
+            } else {
+                document.getElementById('att-modal-title').innerText = "Sesi Kehadiran Baru";
+                document.getElementById('att-id').value = "";
+                document.getElementById('att-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('att-type').value = "Latihan";
+                document.getElementById('att-title').value = "";
+                currentAttSession = players.map(p => ({ pid: p.id, status: 'Hadir' }));
+            }
+            renderAttendancePlayers();
+        }
+
+        function renderAttendancePlayers() {
+            const listEl = document.getElementById('att-players-list');
+            listEl.innerHTML = players.map(p => {
+                const rec = currentAttSession.find(r => r.pid === p.id);
+                const s = rec ? rec.status : 'Hadir';
+                return `
+                <tr class="hover:bg-gray-50 transition border-b">
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase truncate max-w-[120px]">${p.nickname}</td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Hadir" ${s==='Hadir'?'checked':''} onchange="updateAttStatus(${p.id}, 'Hadir')" class="w-4 h-4 text-green-600 accent-green-600"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Izin" ${s==='Izin'?'checked':''} onchange="updateAttStatus(${p.id}, 'Izin')" class="w-4 h-4 text-yellow-500 accent-yellow-500"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Sakit" ${s==='Sakit'?'checked':''} onchange="updateAttStatus(${p.id}, 'Sakit')" class="w-4 h-4 text-orange-500 accent-orange-500"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Alpa" ${s==='Alpa'?'checked':''} onchange="updateAttStatus(${p.id}, 'Alpa')" class="w-4 h-4 text-red-600 accent-red-600"></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateAttStatus(pid, status) {
+            const rec = currentAttSession.find(r => r.pid === pid);
+            if(rec) rec.status = status;
+        }
+
+        function closeAttendanceModal() { document.getElementById('attendance-modal').classList.add('hidden'); }
+
+        function saveAttendance() {
+            const date = document.getElementById('att-date').value;
+            const title = document.getElementById('att-title').value.trim();
+            if(!date) return alert("Tanggal wajib diisi!");
+            
+            const id = document.getElementById('att-id').value;
+            const attData = {
+                id: id ? parseInt(id) : Date.now(),
+                date,
+                type: document.getElementById('att-type').value,
+                title: title,
+                records: currentAttSession
+            };
+
+            if(id) {
+                const idx = attendances.findIndex(x => x.id == id);
+                attendances[idx] = attData;
+            } else {
+                attendances.push(attData);
+            }
+            saveData();
+            closeAttendanceModal();
+            alert("Data kehadiran berhasil disimpan!");
+        }
+
+        function deleteAttendance(id) {
+            if(confirm("Hapus sesi kehadiran ini?")) {
+                attendances = attendances.filter(a => a.id !== id);
                 saveData();
             }
         }
