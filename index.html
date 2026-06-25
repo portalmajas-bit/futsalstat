@@ -92,6 +92,9 @@
             <button onclick="showPage('attendance')" id="nav-attendance" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                 <i class="fas fa-clipboard-list w-5"></i> Kehadiran Atlet
             </button>
+            <button onclick="showPage('tests')" id="nav-tests" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                <i class="fas fa-flask w-5"></i> Tes &amp; Pengukuran
+            </button>
             <div class="mt-4 pt-4 border-t border-gray-100">
                 <button onclick="showPage('users')" id="nav-users" class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
                     <i class="fas fa-users w-5"></i> Manajemen Pengguna
@@ -243,7 +246,7 @@
                 </div>
             </div>
             <div class="card overflow-x-auto">
-                <table class="w-full text-left min-w-[1200px]">
+                <table class="w-full text-left min-w-[1400px]">
                     <thead class="bg-blue-600 text-white text-[10px] font-bold uppercase">
                         <tr>
                             <th class="p-4 sticky left-0 bg-blue-600 z-10">Nama Pemain</th>
@@ -256,6 +259,8 @@
                             <th class="p-4 text-center text-red-300">RC</th>
                             <th class="p-4 text-center">W-D-L</th>
                             <th class="p-4 text-center">Avg Rating</th>
+                            <th class="p-4 text-center bg-indigo-700/80"><i class="fas fa-dumbbell"></i> Fisik</th>
+                            <th class="p-4 text-center bg-violet-700/80"><i class="fas fa-shoe-prints"></i> Teknik</th>
                         </tr>
                     </thead>
                     <tbody id="player-stats-body" class="divide-y text-sm font-semibold text-gray-700"></tbody>
@@ -304,6 +309,54 @@
                         </tr>
                     </thead>
                     <tbody id="att-rekap-body" class="divide-y text-sm"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TESTS PAGE -->
+        <section id="page-tests" class="page-content hidden space-y-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Tes &amp; Pengukuran</h2>
+                    <p class="text-xs text-gray-500 mt-1">Catat hasil tes fisik dan teknik. Grade pemain dikalkulasi otomatis.</p>
+                </div>
+                <button onclick="openTestModal()" class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                    <i class="fas fa-plus mr-2"></i> Tambah Sesi Tes
+                </button>
+            </div>
+
+            <!-- Stats Summary Cards -->
+            <div id="test-summary-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+
+            <div class="flex border-b border-gray-200">
+                <button onclick="switchTestTab('list')" id="tab-test-list" class="tab-btn active px-6 py-3 font-bold text-sm transition">Daftar Sesi Tes</button>
+                <button onclick="switchTestTab('rekap')" id="tab-test-rekap" class="tab-btn px-6 py-3 font-bold text-sm transition">Rekap Per Pemain</button>
+            </div>
+
+            <!-- Sesi List View -->
+            <div id="test-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+            <!-- Rekap View -->
+            <div id="test-rekap-view" class="card overflow-x-auto hidden">
+                <table class="w-full text-left min-w-[900px]">
+                    <thead class="bg-indigo-600 text-white text-[10px] font-bold uppercase">
+                        <tr>
+                            <th class="p-4 sticky left-0 bg-indigo-600 z-10">Nama Pemain</th>
+                            <th class="p-4 text-center bg-indigo-700">Endurance</th>
+                            <th class="p-4 text-center bg-indigo-700">Strength</th>
+                            <th class="p-4 text-center bg-indigo-700">Agility</th>
+                            <th class="p-4 text-center bg-indigo-700">Speed</th>
+                            <th class="p-4 text-center bg-indigo-700">Power</th>
+                            <th class="p-4 text-center bg-violet-700">Dribbling</th>
+                            <th class="p-4 text-center bg-violet-700">Passing</th>
+                            <th class="p-4 text-center bg-violet-700">Shooting</th>
+                            <th class="p-4 text-center bg-violet-700">Ball Control</th>
+                            <th class="p-4 text-center">Avg Fisik</th>
+                            <th class="p-4 text-center">Avg Teknik</th>
+                            <th class="p-4 text-center">Grade</th>
+                        </tr>
+                    </thead>
+                    <tbody id="test-rekap-body" class="divide-y text-sm font-semibold text-gray-700"></tbody>
                 </table>
             </div>
         </section>
@@ -423,28 +476,15 @@
                     </div>
                 </div>
                 
-                <div class="bg-gray-50 p-4 rounded-xl">
-                    <h4 class="text-[10px] font-extrabold text-gray-400 uppercase mb-3">Grade Kemampuan Fisik</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
-                            <span class="text-[10px] font-bold text-gray-500">ENDURANCE</span>
-                            <select id="s-endurance" class="font-bold text-blue-600 outline-none"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option></select>
-                        </div>
-                        <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
-                            <span class="text-[10px] font-bold text-gray-500">STRENGTH</span>
-                            <select id="s-strength" class="font-bold text-blue-600 outline-none"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option></select>
-                        </div>
-                        <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
-                            <span class="text-[10px] font-bold text-gray-500">AGILITY</span>
-                            <select id="s-agility" class="font-bold text-blue-600 outline-none"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option></select>
-                        </div>
-                        <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm">
-                            <span class="text-[10px] font-bold text-gray-500">SPEED</span>
-                            <select id="s-speed" class="font-bold text-blue-600 outline-none"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option></select>
-                        </div>
-                        <div class="bg-white p-3 border rounded-xl flex justify-between items-center shadow-sm col-span-2">
-                            <span class="text-[10px] font-bold text-gray-500">POWER</span>
-                            <select id="s-power" class="font-bold text-blue-600 outline-none"><option>A</option><option>B</option><option selected>C</option><option>D</option><option>E</option></select>
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-flask text-indigo-500 text-xs"></i>
+                        <h4 class="text-[10px] font-extrabold text-indigo-600 uppercase">Grade Kemampuan (Otomatis dari Tes)</h4>
+                    </div>
+                    <div id="player-auto-grade-panel" class="grid grid-cols-2 gap-2">
+                        <!-- Filled dynamically by JS -->
+                        <div class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">
+                            Grade akan tampil otomatis setelah ada data tes pemain ini.
                         </div>
                     </div>
                 </div>
@@ -517,6 +557,49 @@
         </div>
     </div>
 
+    <!-- TESTS MODAL -->
+    <div id="test-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div class="p-6 bg-indigo-600 font-bold flex justify-between items-center text-white">
+                <span id="test-modal-title" class="flex items-center gap-2"><i class="fas fa-flask"></i> Sesi Tes Baru</span>
+                <button onclick="closeTestModal()"><i class="fas fa-times text-indigo-200 hover:text-white"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="test-id">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tanggal Tes</label>
+                        <input type="date" id="test-date" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Jenis Tes</label>
+                        <select id="test-type" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold" onchange="renderTestPlayersTable()">
+                            <option value="Fisik">Fisik</option>
+                            <option value="Teknik">Teknik</option>
+                            <option value="Fisik &amp; Teknik">Fisik &amp; Teknik</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Judul / Keterangan</label>
+                        <input type="text" id="test-title" placeholder="Cth: Tes Awal Musim" class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                </div>
+                <div class="overflow-x-auto mt-2 border rounded-xl">
+                    <table class="w-full text-sm text-left" id="test-input-table">
+                        <thead id="test-input-thead" class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500 border-b">
+                            <tr id="test-header-row"></tr>
+                        </thead>
+                        <tbody id="test-players-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-gray-400 italic">Masukkan nilai 0-100 untuk setiap parameter. Kosongkan jika pemain tidak mengikuti tes ini.</p>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button onclick="saveTest()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 uppercase tracking-wider">Simpan Hasil Tes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- RESULT MODAL -->
     <div id="result-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
         <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
@@ -567,6 +650,7 @@
         let players = JSON.parse(localStorage.getItem('futsal_p_v11')) || [];
         let matches = JSON.parse(localStorage.getItem('futsal_m_v11')) || [];
         let attendances = JSON.parse(localStorage.getItem('futsal_att_v11')) || [];
+        let tests = JSON.parse(localStorage.getItem('futsal_tests_v11')) || [];
         let teamSettings = JSON.parse(localStorage.getItem('futsal_team_v11')) || {
             name: "FUTSALPRO", slogan: "ELITE PERFORMANCE TEAM",
             logo: "https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff", established: 2024
@@ -575,6 +659,8 @@
         let currentMatchTab = 'upcoming';
         let currentAttTab = 'sesi';
         let currentAttSession = [];
+        let currentTestTab = 'list';
+        let currentTestSession = {}; // { pid: { endurance, strength, agility, speed, power, dribbling, passing, shooting, ballControl } }
         let performanceChart = null;
         let tempPlayerPhoto = null;
         let tempLogoBase64 = teamSettings.logo;
@@ -632,7 +718,8 @@
             document.getElementById('page-' + pageId).classList.remove('hidden');
             
             document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-            document.getElementById('nav-' + pageId).classList.add('active');
+            const navEl = document.getElementById('nav-' + pageId);
+            if (navEl) navEl.classList.add('active');
             
             if (window.innerWidth < 768) {
                 document.getElementById('sidebar').classList.add('-translate-x-full');
@@ -640,6 +727,7 @@
             }
 
             if(pageId === 'dashboard') renderDashboard();
+            if(pageId === 'tests') { renderTests(); renderTestSummaryCards(); }
         }
 
         function saveData() {
@@ -647,6 +735,7 @@
             localStorage.setItem('futsal_p_v11', JSON.stringify(players));
             localStorage.setItem('futsal_m_v11', JSON.stringify(matches));
             localStorage.setItem('futsal_att_v11', JSON.stringify(attendances));
+            localStorage.setItem('futsal_tests_v11', JSON.stringify(tests));
             localStorage.setItem('futsal_team_v11', JSON.stringify(teamSettings));
             refreshAll();
         }
@@ -656,6 +745,7 @@
             renderPlayers();
             renderMatches();
             renderAttendances();
+            renderTests();
             renderDashboard();
             renderPlayerStats();
             renderUsers();
@@ -765,6 +855,7 @@
         function openPlayerModal(playerId = null) {
             tempPlayerPhoto = null;
             document.getElementById('player-modal').classList.remove('hidden');
+            const panel = document.getElementById('player-auto-grade-panel');
             if(playerId) {
                 const p = players.find(x => x.id === playerId);
                 document.getElementById('player-modal-title').innerText = "Edit Data Pemain";
@@ -775,11 +866,26 @@
                 document.getElementById('p-h').value = p.h;
                 document.getElementById('p-w').value = p.w;
                 document.getElementById('p-photo-preview').src = p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`;
-                document.getElementById('s-endurance').value = p.physique.endurance;
-                document.getElementById('s-strength').value = p.physique.strength;
-                document.getElementById('s-agility').value = p.physique.agility;
-                document.getElementById('s-speed').value = p.physique.speed;
-                document.getElementById('s-power').value = p.physique.power;
+                // Show auto grades
+                const avgs = getPlayerTestAvg(p.id);
+                if(avgs.hasData) {
+                    const params = [
+                        {key:'endurance',label:'Endurance'},{key:'strength',label:'Strength'},{key:'agility',label:'Agility'},
+                        {key:'speed',label:'Speed'},{key:'power',label:'Power'},{key:'dribbling',label:'Dribbling'},
+                        {key:'passing',label:'Passing'},{key:'shooting',label:'Shooting'},{key:'ballControl',label:'Ball Control'}
+                    ];
+                    panel.innerHTML = params.filter(pp => avgs[pp.key] !== null).map(pp => {
+                        const score = avgs[pp.key]; const grade = scoreToGrade(score);
+                        return `<div class="bg-white p-2 border border-indigo-100 rounded-xl flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-gray-500 uppercase">${pp.label}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[9px] text-gray-400">${score.toFixed(0)}</span>
+                                <span class="grade-badge grade-${grade}">${grade}</span>
+                            </div></div>`;
+                    }).join('');
+                } else {
+                    panel.innerHTML = '<div class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">Grade akan tampil otomatis setelah ada data tes pemain ini.</div>';
+                }
             } else {
                 document.getElementById('player-modal-title').innerText = "Tambah Pemain Baru";
                 document.getElementById('edit-player-id').value = "";
@@ -789,6 +895,7 @@
                 document.getElementById('p-h').value = "";
                 document.getElementById('p-w').value = "";
                 document.getElementById('p-photo-preview').src = "https://ui-avatars.com/api/?name=P&background=2563eb&color=fff";
+                panel.innerHTML = '<div class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">Grade akan tampil otomatis setelah ada data tes pemain ini.</div>';
             }
         }
 
@@ -818,13 +925,7 @@
                 h: document.getElementById('p-h').value,
                 w: document.getElementById('p-w').value,
                 photo: tempPlayerPhoto || (id ? players.find(x => x.id == id).photo : null),
-                physique: {
-                    endurance: document.getElementById('s-endurance').value,
-                    strength: document.getElementById('s-strength').value,
-                    agility: document.getElementById('s-agility').value,
-                    speed: document.getElementById('s-speed').value,
-                    power: document.getElementById('s-power').value
-                },
+                physique: id ? (players.find(x => x.id == id).physique || {}) : {},
                 stats: id ? players.find(x => x.id == id).stats : { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0, avgRating: "0.0" }
             };
 
@@ -934,6 +1035,19 @@
             const body = document.getElementById('player-list-body');
             body.innerHTML = players.map(p => {
                 const age = calculateAge(p.birthdate);
+                const avgs = getPlayerTestAvg(p.id);
+                let gradeBadges = '';
+                if(avgs.hasData) {
+                    const physParams = ['endurance','strength','agility','speed','power'];
+                    const techParams = ['dribbling','passing','shooting','ballControl'];
+                    const physGrades = physParams.filter(k => avgs[k] !== null).map(k => scoreToGrade(avgs[k]));
+                    const techGrades = techParams.filter(k => avgs[k] !== null).map(k => scoreToGrade(avgs[k]));
+                    [...physGrades, ...techGrades].forEach(g => { gradeBadges += `<span class="grade-badge grade-${g}">${g}</span>`; });
+                } else if(p.physique && Object.keys(p.physique).length > 0) {
+                    Object.values(p.physique).forEach(g => { gradeBadges += `<span class="grade-badge grade-${g}">${g}</span>`; });
+                } else {
+                    gradeBadges = '<span class="text-[10px] text-gray-400 italic">Belum ada tes</span>';
+                }
                 return `
                 <tr class="border-b hover:bg-gray-50/50">
                     <td class="p-4">
@@ -948,9 +1062,7 @@
                     <td class="p-4 font-bold text-gray-600">${age} thn</td>
                     <td class="p-4 text-center text-xs font-bold text-gray-500">${p.h || '-'}cm / ${p.w || '-'}kg</td>
                     <td class="p-4">
-                        <div class="flex justify-center gap-1">
-                            ${Object.values(p.physique).map(g => `<span class="grade-badge grade-${g}">${g}</span>`).join('')}
-                        </div>
+                        <div class="flex flex-wrap justify-center gap-1">${gradeBadges}</div>
                     </td>
                     <td class="p-4 text-right">
                         <button onclick="openPlayerModal(${p.id})" class="text-blue-500 hover:text-blue-700 mx-2"><i class="fas fa-edit"></i></button>
@@ -965,7 +1077,11 @@
             const body = document.getElementById('player-stats-body');
             body.innerHTML = [...players]
                 .sort((a, b) => b.stats.avgRating - a.stats.avgRating)
-                .map(p => `
+                .map(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                const fysAvg = avgs.avgFisik !== null ? `<span class="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs font-bold">${avgs.avgFisik.toFixed(0)}</span>` : '<span class="text-gray-300 text-xs">-</span>';
+                const tekAvg = avgs.avgTeknik !== null ? `<span class="px-2 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold">${avgs.avgTeknik.toFixed(0)}</span>` : '<span class="text-gray-300 text-xs">-</span>';
+                return `
                 <tr class="border-b hover:bg-blue-50/30">
                     <td class="p-4 sticky left-0 bg-white z-10">
                         <div class="flex items-center gap-2 min-w-[120px]">
@@ -984,7 +1100,10 @@
                     <td class="p-4 text-center">
                         <span class="px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold">${p.stats.avgRating}</span>
                     </td>
-                </tr>`).join('');
+                    <td class="p-4 text-center bg-indigo-50/30">${fysAvg}</td>
+                    <td class="p-4 text-center bg-violet-50/30">${tekAvg}</td>
+                </tr>`;
+            }).join('');
         }
 
         function renderDashboard() {
@@ -1347,6 +1466,260 @@
             saveData();
             closeResultModal();
             alert("Statistik laga berhasil diperbarui!");
+        }
+
+        // ===== TESTS & MEASUREMENT LOGIC =====
+
+        // Helper: convert score (0-100) to grade A/B/C/D/E
+        function scoreToGrade(score) {
+            if(score >= 85) return 'A';
+            if(score >= 70) return 'B';
+            if(score >= 55) return 'C';
+            if(score >= 40) return 'D';
+            return 'E';
+        }
+
+        // Helper: get average test scores per player
+        function getPlayerTestAvg(pid) {
+            const physParams = ['endurance','strength','agility','speed','power'];
+            const techParams = ['dribbling','passing','shooting','ballControl'];
+            const allParams = [...physParams, ...techParams];
+            const sums = {}; const counts = {};
+            allParams.forEach(k => { sums[k] = 0; counts[k] = 0; });
+
+            tests.forEach(t => {
+                const rec = t.records.find(r => r.pid === pid);
+                if(!rec) return;
+                allParams.forEach(k => {
+                    if(rec[k] !== null && rec[k] !== undefined && rec[k] !== '') {
+                        sums[k] += parseFloat(rec[k]);
+                        counts[k]++;
+                    }
+                });
+            });
+
+            const result = { hasData: false };
+            allParams.forEach(k => {
+                result[k] = counts[k] > 0 ? sums[k] / counts[k] : null;
+                if(result[k] !== null) result.hasData = true;
+            });
+
+            // Compute averages per category
+            const physVals = physParams.map(k => result[k]).filter(v => v !== null);
+            const techVals = techParams.map(k => result[k]).filter(v => v !== null);
+            result.avgFisik = physVals.length > 0 ? physVals.reduce((a,b) => a+b,0)/physVals.length : null;
+            result.avgTeknik = techVals.length > 0 ? techVals.reduce((a,b) => a+b,0)/techVals.length : null;
+            return result;
+        }
+
+        function renderTestSummaryCards() {
+            const el = document.getElementById('test-summary-cards');
+            if(!el) return;
+            const totalSessions = tests.length;
+            const fisikSessions = tests.filter(t => t.type === 'Fisik' || t.type === 'Fisik & Teknik').length;
+            const teknikSessions = tests.filter(t => t.type === 'Teknik' || t.type === 'Fisik & Teknik').length;
+            // Best physical avg player
+            let bestFisikPlayer = '-', bestFisikScore = 0;
+            players.forEach(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                if(avgs.avgFisik !== null && avgs.avgFisik > bestFisikScore) {
+                    bestFisikScore = avgs.avgFisik;
+                    bestFisikPlayer = p.nickname;
+                }
+            });
+            el.innerHTML = `
+                <div class="card p-4 border-l-4 border-l-indigo-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Total Sesi Tes</p>
+                    <h3 class="text-2xl font-bold text-indigo-600">${totalSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-blue-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Tes Fisik</p>
+                    <h3 class="text-2xl font-bold text-blue-600">${fisikSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-violet-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Tes Teknik</p>
+                    <h3 class="text-2xl font-bold text-violet-600">${teknikSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-teal-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Pemain Terbaik (Fisik)</p>
+                    <h3 class="text-lg font-bold text-teal-600 truncate">${bestFisikPlayer}</h3>
+                    ${bestFisikScore > 0 ? `<p class="text-[10px] text-gray-400">${bestFisikScore.toFixed(0)}/100</p>` : ''}
+                </div>`;
+        }
+
+        function switchTestTab(tab) {
+            currentTestTab = tab;
+            document.getElementById('tab-test-list').classList.toggle('active', tab === 'list');
+            document.getElementById('tab-test-rekap').classList.toggle('active', tab === 'rekap');
+            if(tab === 'list') {
+                document.getElementById('test-sesi-view').classList.remove('hidden');
+                document.getElementById('test-rekap-view').classList.add('hidden');
+                renderTests();
+            } else {
+                document.getElementById('test-sesi-view').classList.add('hidden');
+                document.getElementById('test-rekap-view').classList.remove('hidden');
+                renderTestRekapTable();
+            }
+        }
+
+        function renderTests() {
+            const grid = document.getElementById('test-sesi-view');
+            if(!grid) return;
+            if(tests.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Belum ada sesi tes. Klik <span class='text-indigo-500'>Tambah Sesi Tes</span> untuk memulai!</div>`;
+                return;
+            }
+            const typeColors = { 'Fisik': 'bg-indigo-100 text-indigo-600', 'Teknik': 'bg-violet-100 text-violet-600', 'Fisik & Teknik': 'bg-teal-100 text-teal-600' };
+            grid.innerHTML = [...tests].sort((a,b) => new Date(b.date) - new Date(a.date)).map(t => {
+                const colorClass = typeColors[t.type] || 'bg-gray-100 text-gray-600';
+                const participantCount = t.records.filter(r => {
+                    return Object.values(r).some(v => v !== null && v !== undefined && v !== '' && typeof v === 'number');
+                }).length;
+                return `
+                <div class="card p-5 space-y-3 border border-indigo-50 hover:border-indigo-200 transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-gray-100 text-gray-500 uppercase">${new Date(t.date + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'short', year:'numeric'})}</span>
+                        <span class="text-[10px] font-black px-2 py-1 rounded ${colorClass} uppercase"><i class="fas fa-flask mr-1"></i>${t.type}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 truncate">${t.title || 'Sesi Tanpa Judul'}</h4>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">${participantCount} Pemain Mengikuti</p>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-gray-100">
+                        <button onclick="openTestModal(${t.id})" class="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100"><i class="fas fa-edit mr-1"></i>EDIT TES</button>
+                        <button onclick="deleteTest(${t.id})" class="w-10 bg-red-50 text-red-400 py-2 rounded-lg text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderTestRekapTable() {
+            const body = document.getElementById('test-rekap-body');
+            if(!body) return;
+            const physParams = ['endurance','strength','agility','speed','power'];
+            const techParams = ['dribbling','passing','shooting','ballControl'];
+            body.innerHTML = players.map(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                const makeCell = (val, bgClass='') => val !== null
+                    ? `<td class="p-4 text-center ${bgClass}"><div class="flex flex-col items-center gap-1"><span class="text-xs font-bold">${val.toFixed(0)}</span><span class="grade-badge grade-${scoreToGrade(val)}">${scoreToGrade(val)}</span></div></td>`
+                    : `<td class="p-4 text-center text-gray-300 text-xs ${bgClass}">-</td>`;
+                
+                const overallAvg = [avgs.avgFisik, avgs.avgTeknik].filter(v => v !== null);
+                const overall = overallAvg.length > 0 ? overallAvg.reduce((a,b) => a+b, 0) / overallAvg.length : null;
+                return `
+                <tr class="border-b hover:bg-indigo-50/20">
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border">
+                            <span class="font-bold text-gray-800 uppercase text-xs truncate">${p.nickname}</span>
+                        </div>
+                    </td>
+                    ${physParams.map(k => makeCell(avgs[k], 'bg-indigo-50/30')).join('')}
+                    ${techParams.map(k => makeCell(avgs[k], 'bg-violet-50/30')).join('')}
+                    ${avgs.avgFisik !== null ? `<td class="p-4 text-center bg-indigo-50"><span class="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs font-bold">${avgs.avgFisik.toFixed(0)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                    ${avgs.avgTeknik !== null ? `<td class="p-4 text-center bg-violet-50"><span class="px-2 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold">${avgs.avgTeknik.toFixed(0)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                    ${overall !== null ? `<td class="p-4 text-center"><span class="px-3 py-1 rounded-lg font-black text-white text-xs" style="background:${overall>=85?'#16a34a':overall>=70?'#2563eb':overall>=55?'#ca8a04':overall>=40?'#ea580c':'#dc2626'}">${scoreToGrade(overall)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                </tr>`;
+            }).join('');
+        }
+
+        function openTestModal(testId = null) {
+            document.getElementById('test-modal').classList.remove('hidden');
+            if(testId) {
+                const t = tests.find(x => x.id === testId);
+                document.getElementById('test-modal-title').innerHTML = '<i class="fas fa-flask"></i> Edit Sesi Tes';
+                document.getElementById('test-id').value = t.id;
+                document.getElementById('test-date').value = t.date;
+                document.getElementById('test-type').value = t.type;
+                document.getElementById('test-title').value = t.title || '';
+                currentTestSession = {};
+                t.records.forEach(r => { currentTestSession[r.pid] = { ...r }; });
+            } else {
+                document.getElementById('test-modal-title').innerHTML = '<i class="fas fa-flask"></i> Sesi Tes Baru';
+                document.getElementById('test-id').value = '';
+                document.getElementById('test-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('test-type').value = 'Fisik';
+                document.getElementById('test-title').value = '';
+                currentTestSession = {};
+                players.forEach(p => { currentTestSession[p.id] = { pid: p.id }; });
+            }
+            renderTestPlayersTable();
+        }
+
+        function renderTestPlayersTable() {
+            const type = document.getElementById('test-type').value;
+            const showFisik = type === 'Fisik' || type === 'Fisik & Teknik';
+            const showTeknik = type === 'Teknik' || type === 'Fisik & Teknik';
+            const physParams = ['endurance','strength','agility','speed','power'];
+            const techParams = ['dribbling','passing','shooting','ballControl'];
+            const physLabels = ['Endurance','Strength','Agility','Speed','Power'];
+            const techLabels = ['Dribbling','Passing','Shooting','Ball Ctrl'];
+
+            let headerHTML = '<th class="p-3 text-left min-w-[120px]">Nama Pemain</th>';
+            if(showFisik) physLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-indigo-100/50 text-indigo-700">${l}</th>`; });
+            if(showTeknik) techLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-violet-100/50 text-violet-700">${l}</th>`; });
+            document.getElementById('test-header-row').innerHTML = headerHTML;
+
+            const tbody = document.getElementById('test-players-list');
+            tbody.innerHTML = players.map(p => {
+                const rec = currentTestSession[p.id] || { pid: p.id };
+                let rowHTML = `<tr class="hover:bg-gray-50 transition border-b">
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase">
+                        <div class="flex items-center gap-2">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-7 h-7 rounded-full object-cover">
+                            ${p.nickname}
+                        </div>
+                    </td>`;
+                if(showFisik) physParams.forEach(k => {
+                    rowHTML += `<td class="p-2 bg-indigo-50/20"><input type="number" min="0" max="100" placeholder="-" value="${rec[k] ?? ''}" onchange="updateTestRec(${p.id},'${k}',this.value)" class="w-16 p-1 border rounded-lg text-xs text-center font-bold focus:border-indigo-500 outline-none"></td>`;
+                });
+                if(showTeknik) techParams.forEach(k => {
+                    rowHTML += `<td class="p-2 bg-violet-50/20"><input type="number" min="0" max="100" placeholder="-" value="${rec[k] ?? ''}" onchange="updateTestRec(${p.id},'${k}',this.value)" class="w-16 p-1 border rounded-lg text-xs text-center font-bold focus:border-violet-500 outline-none"></td>`;
+                });
+                rowHTML += '</tr>';
+                return rowHTML;
+            }).join('');
+        }
+
+        function updateTestRec(pid, key, val) {
+            if(!currentTestSession[pid]) currentTestSession[pid] = { pid };
+            currentTestSession[pid][key] = val === '' ? null : (parseFloat(val) || 0);
+        }
+
+        function closeTestModal() { document.getElementById('test-modal').classList.add('hidden'); }
+
+        function saveTest() {
+            const date = document.getElementById('test-date').value;
+            if(!date) return alert('Tanggal tes wajib diisi!');
+            const id = document.getElementById('test-id').value;
+            const records = players.map(p => ({ pid: p.id, ...(currentTestSession[p.id] || { pid: p.id }) }));
+            const testData = {
+                id: id ? parseInt(id) : Date.now(),
+                date,
+                type: document.getElementById('test-type').value,
+                title: document.getElementById('test-title').value.trim(),
+                records
+            };
+            if(id) {
+                const idx = tests.findIndex(x => x.id == id);
+                tests[idx] = testData;
+            } else {
+                tests.push(testData);
+            }
+            saveData();
+            closeTestModal();
+            renderTests();
+            renderTestSummaryCards();
+            alert('Data tes berhasil disimpan!');
+        }
+
+        function deleteTest(id) {
+            if(confirm('Hapus sesi tes ini? Nilai rata-rata pemain akan diperbarui.')) {
+                tests = tests.filter(t => t.id !== id);
+                saveData();
+                renderTests();
+                renderTestSummaryCards();
+            }
         }
 
         // UTILS
